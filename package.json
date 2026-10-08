@@ -12,6 +12,7 @@
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "@turbo/gen": "^2.11.7",
     "turbo": "^2.11.7"
   }
 }
