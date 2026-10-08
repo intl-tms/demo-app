@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "Hej verden!"
+  },
+  "LocaleSwitcher": {
+    "label": "Skift sprog",
+    "locale": "{locale, select, en {English} da {Dansk} other {Ukendt}}"
+  }
+}
