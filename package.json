@@ -1,0 +1,17 @@
+{
+  "name": "demo-app",
+  "private": true,
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "check-types": "turbo run check-types",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.7"
+  }
+}
