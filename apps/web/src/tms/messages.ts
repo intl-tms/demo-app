@@ -1,11 +1,12 @@
 import {cookies} from 'next/headers';
+import {connection} from 'next/server';
 import {
   markCatalog,
   TOGGLE_COOKIE_NAME,
   TOGGLE_ON_VALUE,
   type Catalog
 } from '@intl-tms/core';
-import {adapter} from './adapter';
+import {getLocaleValues} from './adapter';
 import {editingEnabled} from './config';
 
 export async function isEditingSession() {
@@ -20,15 +21,14 @@ function keyOf(prefix: string, name: string) {
 }
 
 // Lays the values saved through the editing tools over the bundled messages.
-async function withStoredValues(catalog: Catalog, locale: string, prefix = '') {
+function withStoredValues(catalog: Catalog, stored: Map<string, string>, prefix = '') {
   const out: Catalog = {};
   for (const [name, value] of Object.entries(catalog)) {
     const key = keyOf(prefix, name);
     if (typeof value === 'string') {
-      const stored: Partial<Record<string, {value: string}>> = await adapter.getValues(key);
-      out[name] = stored[locale]?.value ?? value;
+      out[name] = stored.get(key) ?? value;
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      out[name] = await withStoredValues(value as Catalog, locale, key);
+      out[name] = withStoredValues(value as Catalog, stored, key);
     } else {
       out[name] = value;
     }
@@ -37,5 +37,8 @@ async function withStoredValues(catalog: Catalog, locale: string, prefix = '') {
 }
 
 export async function editingMessages<T extends Catalog>(catalog: T, locale: string) {
-  return markCatalog((await withStoredValues(catalog, locale)) as T);
+  // The stored values are read per request: the Mongo driver reads the clock,
+  // which Next.js refuses during a prerender.
+  await connection();
+  return markCatalog(withStoredValues(catalog, await getLocaleValues(locale)) as T);
 }
