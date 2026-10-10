@@ -5,6 +5,7 @@ import {
   type StorageAdapter,
   type Usage
 } from '@intl-tms/core';
+import {bundledValues} from './bundled';
 import type {config} from './config';
 
 type Config = typeof config;
@@ -49,7 +50,10 @@ export const adapter: StorageAdapter<Config> = {
     const docs = await (await translations())
       .find({key}, {projection: {_id: 0, key: 0}})
       .toArray();
-    return Object.fromEntries(docs.map(({locale, ...row}) => [locale, row]));
+    // A locale with no stored row answers with its bundled message, so the
+    // panel edits the real pattern instead of the formatted text on the page.
+    const bundled = Object.entries(bundledValues(key)).map(([locale, value]) => [locale, {value}]);
+    return Object.fromEntries([...bundled, ...docs.map(({locale, ...row}) => [locale, row])]);
   },
 
   async saveValue(key, write) {
