@@ -8,6 +8,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:extracted": "turbo run dev --filter next-intl-extracted",
     "check-types": "turbo run check-types",
     "lint": "turbo run lint"
   },
