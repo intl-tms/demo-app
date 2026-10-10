@@ -1,5 +1,104 @@
 # demo-app
 
+A Next.js website that integrates [Intl TMS](https://intl-tms.github.io/docs/),
+so you can see in-context translation editing working end to end: a website
+that marks its text, the endpoints that save an edit, a storage adapter, and
+the Extension editing it.
+
+Internationalization is done by [next-intl](https://next-intl.dev). The app to
+run is `apps/web`: English and Danish, storing edits in MongoDB.
+
+It is one example of an integration, not the reference for one. Its storage
+choice and the way it reads saved values are its own. To integrate your own
+website, follow the
+[getting started guide](https://intl-tms.github.io/docs/developers/getting-started).
+
+## Running it
+
+You need:
+
+- Node.js 24 or newer, and pnpm.
+- A MongoDB database (a local instance or a hosted one) and its connection
+  string.
+- Chrome, for the Extension.
+
+### 1. Clone the repositories side by side
+
+The demo app and the Extension link the Core from a sibling folder, so all
+three must sit next to each other.
+
+```bash
+mkdir intl-tms && cd intl-tms
+git clone https://github.com/intl-tms/core.git
+git clone https://github.com/intl-tms/extension.git
+git clone https://github.com/intl-tms/demo-app.git
+```
+
+### 2. Build the Core
+
+```bash
+cd core
+npm install
+npm run build
+cd ..
+```
+
+### 3. Run the app
+
+```bash
+cd demo-app
+pnpm install
+echo 'MONGODB_URI=mongodb://localhost:27017' > apps/web/.env.local
+pnpm --filter web dev
+```
+
+Open `http://localhost:3000`.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MONGODB_URI` | none, required | Where edits and usage are stored. |
+| `MONGODB_DB` | `intl-tms` | The database name. |
+| `SITE_URL` | `http://localhost:3000` | The origin the endpoints are published under. |
+| `TMS_EDITING` | off | Set to `1` to enable editing outside `next dev`. Editing is always on in development. |
+
+### 4. Build and load the Extension
+
+```bash
+cd ../extension
+pnpm install
+pnpm build
+```
+
+Open `chrome://extensions`, switch on **Developer mode**, choose **Load
+unpacked** and pick the `extension/dist` folder.
+
+### 5. Edit something
+
+1. On `http://localhost:3000`, click the **Intl TMS** icon.
+2. Paste the Config URL: `http://localhost:3000/api/tms/config`
+3. Click **On** and allow access when Chrome asks.
+4. Hold **Alt** and click any outlined text, change it, and click **Save all**.
+
+The rest is in the
+[Editor guide](https://intl-tms.github.io/docs/editors/editing).
+
+## Where the integration lives
+
+In `apps/web/src/`:
+
+| File | What it does |
+| --- | --- |
+| `tms/config.ts` | `resolveConfig` with the next-intl locales, and the `editingEnabled` deployment switch. |
+| `tms/messages.ts` | Reads the Toggle cookie, overlays stored values on the bundled messages, and calls `markCatalog`. |
+| `tms/adapter.ts` | The MongoDB storage adapter. |
+| `tms/bundled.ts` | Looks up a key's bundled message so the panel edits the real pattern. |
+| `i18n/request.ts` | Hands next-intl marked messages during an editing session, plain ones otherwise. |
+| `app/api/tms/[...path]/route.ts` | Mounts `createHandler`. |
+
+> **Demo authorization.** The `authorize` function allows anyone to read and
+> write while editing is enabled. Replace it with a real check before using
+> this pattern for real content.
+
 ## Storybook
 
 `apps/web` and `apps/next-intl-extracted` each have a Storybook, with the
