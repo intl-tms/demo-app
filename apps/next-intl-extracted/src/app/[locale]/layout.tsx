@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 
@@ -37,7 +38,10 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        {/* Messages depend on the editing cookie when editing is enabled */}
+        <Suspense>
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        </Suspense>
       </body>
     </html>
   );
