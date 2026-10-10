@@ -7,17 +7,12 @@ import {
   type Catalog
 } from '@intl-tms/core';
 import {getLocaleValues} from './adapter';
+import {keyOf} from './bundled';
 import {editingEnabled} from './config';
 
 export async function isEditingSession() {
   if (!editingEnabled) return false;
   return (await cookies()).get(TOGGLE_COOKIE_NAME)?.value === TOGGLE_ON_VALUE;
-}
-
-// Same key rule as `markCatalog`: segments joined by ".", escaped with "\".
-function keyOf(prefix: string, name: string) {
-  const segment = name.replaceAll('\\', '\\\\').replaceAll('.', '\\.');
-  return prefix === '' ? segment : `${prefix}.${segment}`;
 }
 
 // Lays the values saved through the editing tools over the bundled messages.

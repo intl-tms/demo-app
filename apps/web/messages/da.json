@@ -4,6 +4,9 @@
   },
   "LocaleSwitcher": {
     "label": "Skift sprog",
-    "locale": "{locale, select, en {English} da {Dansk} other {Ukendt}}"
+    "locales": {
+      "en": "Engelsk",
+      "da": "Dansk"
+    }
   }
 }

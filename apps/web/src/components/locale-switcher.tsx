@@ -28,7 +28,7 @@ export function LocaleSwitcher() {
     >
       {routing.locales.map((cur) => (
         <option key={cur} value={cur}>
-          {t("locale", { locale: cur })}
+          {t(`locales.${cur}`)}
         </option>
       ))}
     </select>

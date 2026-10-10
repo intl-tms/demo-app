@@ -4,6 +4,9 @@
   },
   "LocaleSwitcher": {
     "label": "Change language",
-    "locale": "{locale, select, en {English} da {Dansk} other {Unknown}}"
+    "locales": {
+      "en": "English",
+      "da": "Danish"
+    }
   }
 }
