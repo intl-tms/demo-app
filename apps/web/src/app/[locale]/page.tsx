@@ -5,6 +5,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher";
 
 export default function Home() {
   const t = useTranslations("HomePage");
+  const shared = useTranslations("shared");
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -66,6 +67,20 @@ export default function Home() {
           >
             Documentation
           </a>
+        </div>
+        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+          <button
+            type="button"
+            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+          >
+            {shared("cancel")}
+          </button>
+          <button
+            type="button"
+            className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
+          >
+            {shared("ok")}
+          </button>
         </div>
       </main>
     </div>

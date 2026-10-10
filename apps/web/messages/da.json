@@ -8,5 +8,9 @@
       "en": "Engelsk",
       "da": "Dansk"
     }
+  },
+  "shared": {
+    "cancel": "Annuller",
+    "ok": "OK"
   }
 }
