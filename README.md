@@ -1,5 +1,11 @@
 # demo-app
 
+> [!WARNING]
+> **Under active development. Do not use in production.**
+> The demo app has no authentication: while editing is switched on, anyone who
+> can reach it can read and change its translations
+> (`authorize: () => editingEnabled`). Run it locally only.
+
 A Next.js website that integrates [Intl TMS](https://intl-tms.github.io/docs/),
 so you can see in-context translation editing working end to end: a website
 that marks its text, the endpoints that save an edit, a storage adapter, and
@@ -155,3 +161,7 @@ The generator lives in `turbo/generators`:
 
 - `config.ts` defines the prompt, validation and actions.
 - `templates/next-app/` holds the files copied into the new app. Files ending in `.hbs` are rendered with Handlebars (for example `{{ dashCase name }}`) and have the extension stripped; everything else is copied as is.
+
+## License
+
+[MIT](./LICENSE)
