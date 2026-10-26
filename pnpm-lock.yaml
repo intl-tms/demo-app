@@ -217,8 +217,8 @@ importers:
   apps/next-intl-extracted:
     dependencies:
       '@intl-tms/core':
-        specifier: link:../../../core
-        version: link:../../../core
+        specifier: ^0.2.0
+        version: 0.2.0
       mongodb:
         specifier: ^7.7.0
         version: 7.7.0
@@ -275,8 +275,8 @@ importers:
   apps/web:
     dependencies:
       '@intl-tms/core':
-        specifier: link:../../../core
-        version: link:../../../core
+        specifier: ^0.2.0
+        version: 0.2.0
       mongodb:
         specifier: ^7.7.0
         version: 7.7.0
@@ -990,6 +990,9 @@ packages:
     peerDependenciesMeta:
       '@types/node':
         optional: true
+
+  '@intl-tms/core@0.2.0':
+    resolution: {integrity: sha512-vYUFlYByNlS5WDGbRRfoh3AUJ0iogZiphkSeywCsJpSdVKLnW6eZJWHSsTZ+Jjnq1nzQ++dESv94IHmI7nfa+g==}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0':
     resolution: {integrity: sha512-qvsTEwEFefhdirGOPnu9Wp6ChfIwy2dBCRuETU3uE+4cC+PFoxMSiiEhxk4lOluA34eARHA0OxqsEUYDqRMgeQ==}
@@ -4631,6 +4634,8 @@ snapshots:
   '@inquirer/type@3.0.10(@types/node@24.19.1)':
     optionalDependencies:
       '@types/node': 24.19.1
+
+  '@intl-tms/core@0.2.0': {}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0(typescript@5.9.3)(vite@8.3.4(@types/node@20.19.43)(esbuild@0.28.2)(jiti@2.7.0))':
     dependencies:

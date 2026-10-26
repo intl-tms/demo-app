@@ -29,11 +29,9 @@ const config: StorybookConfig = {
       ...vite.server,
       fs: {
         ...vite.server?.fs,
-        // @intl-tms/core is linked from outside the repository root
         allow: [
           ...(vite.server?.fs?.allow ?? []),
-          fileURLToPath(new URL('../../..', import.meta.url)),
-          fileURLToPath(new URL('../../../../core', import.meta.url))
+          fileURLToPath(new URL('../../..', import.meta.url))
         ]
       }
     }
