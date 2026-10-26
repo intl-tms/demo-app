@@ -8,3 +8,6 @@ allowBuilds:
   esbuild: false
   '@parcel/watcher': true
   '@swc/core': true
+
+minimumReleaseAgeExclude:
+  - '@intl-tms/core'
