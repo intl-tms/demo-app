@@ -122,8 +122,9 @@ In `apps/web/src/`:
 | `tms/adapter.ts` | The MongoDB storage adapter. It stores who made each change. |
 | `editors/identity-provider.ts` | The stand-in identity provider: the only fake part. Replace it with a real provider. |
 | `editors/sessions.ts` | The Editors' session: its own cookie, kept in a store, 10 hours at most, re-checked with the provider. |
-| `editors/check.ts` | The `authorize` check: `sessionCheck` over that session, the Editor role and the editing switch. |
-| `editors/recipe.test.ts` | Runs the recipe against the stand-in: with and without the role, a role withdrawn, a session past 10 hours, the emergency stop. `pnpm --filter web test`. |
+| `editors/check.ts` | The `authorize` check: `sessionCheck` over Storybook's editing token or that session, the Editor role and the editing switch. |
+| `editors/pairing.ts` | Storybook's sign-in: `createPairing` with the sign-in page, the session and the same re-check. |
+| `editors/recipe.test.ts` | Runs the recipe against the stand-in: with and without the role, a role withdrawn, a session past 10 hours, the emergency stop, and Storybook's sign-in. `pnpm --filter web test`. |
 | `app/editors/` | The sign-in page and the access page. |
 | `tms/bundled.ts` | Looks up a key's bundled message so the panel edits the real pattern. |
 | `i18n/request.ts` | Hands next-intl marked messages during an editing session, plain ones otherwise. |
@@ -147,14 +148,23 @@ pnpm --filter web storybook    # http://localhost:6006
 Use `--filter next-intl-extracted` for the other app. Both use port 3000 and
 6006, so run one app at a time.
 
-Storybook cannot read or save in `apps/web` on this branch: the endpoints now
-need a signed-in Editor, and Storybook's sign-in (pairing through a pop-up) is
-not built yet. Outlines still show.
+In Storybook's toolbar choose **Edit translations: on**. In `apps/web` the
+panel then asks you to sign in: press **Sign in**, pick a demo account in the
+pop-up, and the pop-up closes by itself. Storybook signs in the way a
+Storybook published on another site would, through a pop-up on the app's
+login, even though it runs on the same computer. Then hold Alt and click an
+outlined text.
 
-In Storybook's toolbar choose **Edit translations: on**, then hold Alt and
-click an outlined text. The addon is configured in `.storybook/preview.tsx`;
-the app allows Storybook's origin in `src/app/api/tms/[...path]/route.ts`
-(`STORYBOOK_URL`, default `http://localhost:6006`).
+The addon is configured in `.storybook/preview.tsx`, and the panel's sign-in
+area is drawn by the demo's own React view, `.storybook/sign-in-view.tsx`. The
+app lists Storybook's origin in `src/app/api/tms/[...path]/route.ts`
+(`STORYBOOK_URL`, default `http://localhost:6006`): the pop-up signs in no
+other origin. The access page shows each account's Storybook sign-ins, and
+**End all sessions now** ends them too.
+
+Storybook expects the app at `http://localhost:3000`. If your `.env.local` sets
+`SITE_URL` to another port, change the address in `.storybook/preview.tsx` to
+match.
 
 `.storybook/navigation.mock.ts` replaces `src/i18n/navigation` in stories:
 Storybook 10.6's App Router mock does not support Next.js 16.4 yet. Remove it,

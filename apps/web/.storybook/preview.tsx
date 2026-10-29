@@ -1,6 +1,7 @@
 import type {Preview} from '@storybook/nextjs-vite';
 import {NextIntlClientProvider} from 'next-intl';
 import {createStorybookAddon} from '@intl-tms/core/storybook';
+import {signInView} from './sign-in-view';
 import {routing} from '../src/i18n/routing';
 import da from '../messages/da.json';
 import en from '../messages/en.json';
@@ -11,8 +12,10 @@ type Locale = (typeof routing.locales)[number];
 const messages: Record<Locale, typeof en> = {en, da};
 
 // Edits go to the endpoints of the running app (`pnpm dev`), which lists this
-// Storybook's origin in its cross-origin policy.
-const tms = createStorybookAddon({config: 'http://localhost:3000/api/tms/config'});
+// Storybook's origin in its cross-origin policy. Editors sign in through a
+// pop-up on the app's login, as a Storybook published on another site would:
+// the panel's sign-in area is drawn by the demo's own view.
+const tms = createStorybookAddon({config: 'http://localhost:3000/api/tms/config', signInView});
 
 const preview: Preview = {
   parameters: {
