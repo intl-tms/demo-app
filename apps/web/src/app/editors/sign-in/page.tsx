@@ -4,8 +4,8 @@ import {provider} from '@/editors';
 import {signInAs} from '../actions';
 import {CurrentEditor, FakeNotice, Nav, primaryButton} from '../parts';
 
-// The sign-in page of the login for Editors. With a real identity provider
-// this is one "Sign in with Microsoft" button; the demo lists its stand-in
+// The sign-in page of the login for Editors. On a real website this is the
+// sign-in method the organisation has set up; the demo lists its stand-in
 // accounts instead.
 export default function SignInPage() {
   return (
@@ -13,8 +13,8 @@ export default function SignInPage() {
       <Nav />
       <h1 className="text-2xl font-semibold">Sign in to edit translations</h1>
       <FakeNotice>
-        Anyone can pick any account below, with no password. A real website signs Editors in with the
-        organisation&apos;s identity provider, such as Microsoft.
+        Anyone can pick any account below, with no password. On a real website, Editors sign in with
+        whatever sign-in method their organisation has set up.
       </FakeNotice>
       <Suspense fallback={<p className="text-sm">…</p>}>
         <CurrentEditor />
