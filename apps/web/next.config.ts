@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
+    agentUpgrade: "security",
     // @intl-tms/core is linked from outside the repository root
     turbopackAdditionalRoots: {
       intlTmsCore: { path: "../../../core" },
