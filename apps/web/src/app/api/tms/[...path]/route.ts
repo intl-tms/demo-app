@@ -1,13 +1,15 @@
 import {createHandler} from '@intl-tms/core';
+import {authorize} from '@/editors';
 import {adapter} from '@/tms/adapter';
-import {config, editingEnabled} from '@/tms/config';
+import {config} from '@/tms/config';
 
 const handler = createHandler({
   config,
   adapter,
-  // Demo only: anyone may read and write while editing is enabled. Replace
-  // with a real check (a session, a role) before this serves real content.
-  authorize: () => editingEnabled,
+  // Someone signed in to the login for Editors who holds the Editor role, while
+  // editing is switched on. Nobody signed in gets 401 and the sign-in page;
+  // someone without the role gets 403.
+  authorize,
   // Storybook runs on its own origin and edits through these endpoints.
   cors: {origins: [process.env.STORYBOOK_URL ?? 'http://localhost:6006']}
 });
