@@ -6,9 +6,11 @@
 // signed in on a request, and how to check that account again.
 
 import {createMemoryPairingStore, createPairing} from '@intl-tms/core';
-import {SIGN_IN_PATH} from './check';
 import type {StandInProvider} from './identity-provider';
 import {cookieFrom, EDITOR_SESSION_COOKIE, RECHECK_INTERVAL_MS, type EditorSessions, type EditorUser} from './sessions';
+
+/** The Editors' sign-in page. */
+const SIGN_IN_PATH = '/editors/sign-in';
 
 export function createEditorPairing(options: {provider: StandInProvider; sessions: EditorSessions; now?: () => number}) {
   const {provider, sessions} = options;

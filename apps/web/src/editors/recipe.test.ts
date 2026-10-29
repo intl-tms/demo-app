@@ -90,10 +90,12 @@ function demo() {
 }
 
 describe('the login for Editors', () => {
-  it('nobody signed in is refused with 401 and told where to sign in', async () => {
+  it('nobody signed in is refused with 401 and the help text, and no sign-in address', async () => {
     const response = await demo().read();
     expect(response.status).toBe(401);
-    expect((await response.json()).auth.session.signIn).toBe(`${SITE}/editors/sign-in`);
+    const {auth} = await response.json();
+    expect(auth.help).toMatch(/^Sign in with a demo account/);
+    expect(auth).not.toHaveProperty('session');
   });
 
   it('a customer session does not authorize editing', async () => {
