@@ -1,18 +1,16 @@
-import {cookies} from 'next/headers';
+import {headers} from 'next/headers';
 import {connection} from 'next/server';
-import {
-  markCatalog,
-  TOGGLE_COOKIE_NAME,
-  TOGGLE_ON_VALUE,
-  type Catalog
-} from '@intl-tms/core';
+import {isEditingRequest, markCatalog, type Catalog} from '@intl-tms/core';
+import {authorize, editingSwitch} from '@/editors';
 import {getLocaleValues} from './adapter';
 import {keyOf} from './bundled';
-import {editingEnabled} from './config';
 
+// A page is marked only when the Toggle is set and the Editors' session may
+// read: a visitor who sets the Toggle gets the page as everyone else does.
 export async function isEditingSession() {
-  if (!editingEnabled) return false;
-  return (await cookies()).get(TOGGLE_COOKIE_NAME)?.value === TOGGLE_ON_VALUE;
+  if (!editingSwitch.isOn()) return false;
+  const request = new Request(process.env.SITE_URL ?? 'http://localhost:3000', {headers: await headers()});
+  return isEditingRequest(request, authorize);
 }
 
 // Lays the values saved through the editing tools over the bundled messages.

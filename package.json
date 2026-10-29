@@ -8,7 +8,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:default": "turbo run dev --filter web -- --port 3001",
     "dev:extracted": "turbo run dev --filter next-intl-extracted",
+    "dev:storybook:default": "turbo run storybook --filter web",
     "check-types": "turbo run check-types",
     "lint": "turbo run lint"
   },

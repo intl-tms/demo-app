@@ -11,8 +11,15 @@ import type {config} from './config';
 type Config = typeof config;
 type Locale = Config['locales'][number];
 
-// One document per (key, locale): the row's columns sit next to them.
-type TranslationDoc = {key: string; locale: Locale; value: string};
+// One document per (key, locale): the row's columns sit next to them, with who
+// changed the row last and when.
+type TranslationDoc = {
+  key: string;
+  locale: Locale;
+  value: string;
+  changedBy?: {id: string; name?: string};
+  changedAt?: Date;
+};
 // One document per (key, url).
 type UsageDoc = {key: string; url: string; title?: string; count: number; lastSeen: Date};
 
@@ -48,7 +55,8 @@ const usage = async () => (await db()).collection<UsageDoc>('usage');
 export const adapter: StorageAdapter<Config> = {
   async getValues(key) {
     const docs = await (await translations())
-      .find({key}, {projection: {_id: 0, key: 0}})
+      // Who changed a row is kept for the website, not sent to the panel.
+      .find({key}, {projection: {_id: 0, key: 0, changedBy: 0, changedAt: 0}})
       .toArray();
     // A locale with no stored row answers with its bundled message, so the
     // panel edits the real pattern instead of the formatted text on the page.
@@ -56,14 +64,17 @@ export const adapter: StorageAdapter<Config> = {
     return Object.fromEntries([...bundled, ...docs.map(({locale, ...row}) => [locale, row])]);
   },
 
-  async saveValue(key, write) {
+  async saveValue(key, write, context) {
     const patch = writePatch(write);
     if (isEmptyPatch(patch)) return;
+    // The Core passes on who the authorization check said the Editor is and
+    // records nothing itself; storing it is this adapter's choice.
+    const changed = context?.identity ? {changedBy: context.identity, changedAt: new Date()} : {};
     await (await translations()).updateOne(
       {key, locale: write.locale},
       // A new row starts with an empty value; Mongo rejects a path that is in
       // both operators.
-      {$set: patch, ...('value' in patch ? {} : {$setOnInsert: {value: ''}})},
+      {$set: {...patch, ...changed}, ...('value' in patch ? {} : {$setOnInsert: {value: ''}})},
       {upsert: true}
     );
   },
