@@ -147,14 +147,9 @@ pnpm --filter web storybook    # http://localhost:6006
 Use `--filter next-intl-extracted` for the other app. Both use port 3000 and
 6006, so run one app at a time.
 
-In `apps/web` the endpoints need a signed-in Editor. Sign in to the app first,
-in the same browser, at <http://localhost:3000/editors/sign-in>: Storybook's
-requests carry the Editors' session cookie (`credentials: 'include'` in
-`.storybook/preview.tsx`, `credentials: true` in the route's cross-origin
-policy). This works because Storybook and the app are on the same site
-(`localhost`, another port), where the cookie travels. A Storybook published
-on another site cannot get the cookie; its own sign-in (pairing through a
-pop-up) is not built yet.
+Storybook cannot read or save in `apps/web` on this branch: the endpoints now
+need a signed-in Editor, and Storybook's sign-in (pairing through a pop-up) is
+not built yet. Outlines still show.
 
 In Storybook's toolbar choose **Edit translations: on**, then hold Alt and
 click an outlined text. The addon is configured in `.storybook/preview.tsx`;
