@@ -11,8 +11,9 @@ type Locale = (typeof routing.locales)[number];
 const messages: Record<Locale, typeof en> = {en, da};
 
 // Edits go to the endpoints of the running app (`pnpm dev`), which lists this
-// Storybook's origin in its cross-origin policy.
-const tms = createStorybookAddon({config: 'http://localhost:3000/api/tms/config'});
+// Storybook's origin in its cross-origin policy. The requests carry the
+// Editors' session cookie: sign in to the app in the same browser first.
+const tms = createStorybookAddon({config: 'http://localhost:3000/api/tms/config', credentials: 'include'});
 
 const preview: Preview = {
   parameters: {
