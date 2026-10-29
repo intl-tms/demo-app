@@ -2,9 +2,10 @@
 
 > [!WARNING]
 > **Under active development. Do not use in production.**
-> The demo app has no authentication: while editing is switched on, anyone who
-> can reach it can read and change its translations
-> (`authorize: () => editingEnabled`). Run it locally only.
+> The demo app's sign-in is **not authentication**: its stand-in identity
+> provider lets anyone pick any demo account, with no password. The session,
+> the Editor role check and the Core's check are real; only the provider is
+> fake. Run it locally only.
 
 A Next.js website that integrates [Intl TMS](https://intl-tms.github.io/docs/),
 so you can see in-context translation editing working end to end: a website
@@ -66,6 +67,7 @@ Open `http://localhost:3000`.
 | `MONGODB_DB` | `intl-tms` | The database name. |
 | `SITE_URL` | `http://localhost:3000` | The origin the endpoints are published under. |
 | `TMS_EDITING` | off | Set to `1` to enable editing outside `next dev`. Editing is always on in development. |
+| `STORYBOOK_URL` | `http://localhost:6006` | Storybook's origin, allowed to call the endpoints. |
 
 ### 4. Build and load the Extension
 
@@ -78,12 +80,33 @@ pnpm build
 Open `chrome://extensions`, switch on **Developer mode**, choose **Load
 unpacked** and pick the `extension/dist` folder.
 
-### 5. Edit something
+### 5. Sign in as an Editor
+
+Editors sign in with a login of their own, separate from any login the website
+has for its customers. A real website signs them in with the organisation's
+identity provider, such as Microsoft, and IT gives them the **Editor** role.
+The demo stands in for the provider:
+
+- `http://localhost:3000/editors/sign-in` lists three demo accounts: an
+  employee with the Editor role, a translator from an agency (a guest user)
+  with the role, and an employee without it. Pick one.
+- `http://localhost:3000/editors/access` plays the IT department: give or
+  withdraw the Editor role, disable an account, end an account's sessions at
+  once, switch all editing off, or end your own session as if it ran out.
+
+A session ends 10 hours after sign-in. The account and its role are checked
+again every minute in the demo (every hour on a real website), so a withdrawn
+role is refused within a minute. Restarting the app returns every account to
+how it started and ends every session.
+
+### 6. Edit something
 
 1. On `http://localhost:3000`, click the **Intl TMS** icon.
 2. Paste the Config URL: `http://localhost:3000/api/tms/config`
 3. Click **On** and allow access when Chrome asks.
-4. Hold **Alt** and click any outlined text, change it, and click **Save all**.
+4. If you are not signed in, the Extension says so and offers **Sign in**.
+5. Hold **Alt** and click any outlined text, change it, and click **Save all**.
+   The stored row records who changed it (`changedBy`, `changedAt`).
 
 The rest is in the
 [Editor guide](https://intl-tms.github.io/docs/editors/editing).
@@ -95,15 +118,20 @@ In `apps/web/src/`:
 | File | What it does |
 | --- | --- |
 | `tms/config.ts` | `resolveConfig` with the next-intl locales, and the `editingEnabled` deployment switch. |
-| `tms/messages.ts` | Reads the Toggle cookie, overlays stored values on the bundled messages, and calls `markCatalog`. |
-| `tms/adapter.ts` | The MongoDB storage adapter. |
+| `tms/messages.ts` | Marks a page only for a signed-in Editor (`isEditingRequest`), overlays stored values on the bundled messages, and calls `markCatalog`. |
+| `tms/adapter.ts` | The MongoDB storage adapter. It stores who made each change. |
+| `editors/identity-provider.ts` | The stand-in identity provider: the only fake part. Replace it with a real provider. |
+| `editors/sessions.ts` | The Editors' session: its own cookie, kept in a store, 10 hours at most, re-checked with the provider. |
+| `editors/check.ts` | The `authorize` check: `sessionCheck` over that session, the Editor role and the editing switch. |
+| `editors/recipe.test.ts` | Runs the recipe against the stand-in: with and without the role, a role withdrawn, a session past 10 hours, the emergency stop. `pnpm --filter web test`. |
+| `app/editors/` | The sign-in page and the access page. |
 | `tms/bundled.ts` | Looks up a key's bundled message so the panel edits the real pattern. |
 | `i18n/request.ts` | Hands next-intl marked messages during an editing session, plain ones otherwise. |
 | `app/api/tms/[...path]/route.ts` | Mounts `createHandler`. |
 
-> **Demo authorization.** The `authorize` function allows anyone to read and
-> write while editing is enabled. Replace it with a real check before using
-> this pattern for real content.
+> **Demo sign-in.** Only `editors/identity-provider.ts` and the sign-in page's
+> buttons are fake. Replace them with your organisation's identity provider
+> before using this pattern for real content.
 
 ## Storybook
 
@@ -118,6 +146,10 @@ pnpm --filter web storybook    # http://localhost:6006
 
 Use `--filter next-intl-extracted` for the other app. Both use port 3000 and
 6006, so run one app at a time.
+
+Storybook cannot read or save in `apps/web` on this branch: the endpoints now
+need a signed-in Editor, and Storybook's sign-in (pairing through a pop-up) is
+not built yet. Outlines still show.
 
 In Storybook's toolbar choose **Edit translations: on**, then hold Alt and
 click an outlined text. The addon is configured in `.storybook/preview.tsx`;
