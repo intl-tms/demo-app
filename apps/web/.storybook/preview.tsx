@@ -15,7 +15,7 @@ const messages: Record<Locale, typeof en> = {en, da};
 // Storybook's origin in its cross-origin policy. Editors sign in through a
 // pop-up on the app's login, as a Storybook published on another site would:
 // the panel's sign-in area is drawn by the demo's own view.
-const tms = createStorybookAddon({config: 'http://localhost:3000/api/tms/config', signInView});
+const tms = createStorybookAddon({config: 'http://localhost:3001/api/tms/config', signInView});
 
 const preview: Preview = {
   parameters: {
