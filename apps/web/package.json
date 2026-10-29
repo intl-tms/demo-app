@@ -12,7 +12,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@intl-tms/core": "^0.2.0",
+    "@intl-tms/core": "link:../../../core",
     "mongodb": "^7.7.0",
     "next": "16.4.0",
     "next-intl": "^4.14.9",

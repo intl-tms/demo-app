@@ -28,18 +28,28 @@ You need:
   string.
 - Chrome, for the Extension.
 
-### 1. Clone the repositories
+### 1. Clone the repositories side by side
 
-The demo app and the Extension install the Core,
-[`@intl-tms/core`](https://www.npmjs.com/package/@intl-tms/core), from npm.
+The demo app and the Extension link the Core from a sibling folder, so all
+three must sit next to each other.
 
 ```bash
 mkdir intl-tms && cd intl-tms
+git clone https://github.com/intl-tms/core.git
 git clone https://github.com/intl-tms/extension.git
 git clone https://github.com/intl-tms/demo-app.git
 ```
 
-### 2. Run the app
+### 2. Build the Core
+
+```bash
+cd core
+npm install
+npm run build
+cd ..
+```
+
+### 3. Run the app
 
 ```bash
 cd demo-app
@@ -57,7 +67,7 @@ Open `http://localhost:3000`.
 | `SITE_URL` | `http://localhost:3000` | The origin the endpoints are published under. |
 | `TMS_EDITING` | off | Set to `1` to enable editing outside `next dev`. Editing is always on in development. |
 
-### 3. Build and load the Extension
+### 4. Build and load the Extension
 
 ```bash
 cd ../extension
@@ -68,7 +78,7 @@ pnpm build
 Open `chrome://extensions`, switch on **Developer mode**, choose **Load
 unpacked** and pick the `extension/dist` folder.
 
-### 4. Edit something
+### 5. Edit something
 
 1. On `http://localhost:3000`, click the **Intl TMS** icon.
 2. Paste the Config URL: `http://localhost:3000/api/tms/config`
