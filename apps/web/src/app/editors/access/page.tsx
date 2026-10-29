@@ -1,6 +1,6 @@
 import {connection} from 'next/server';
 import {Suspense} from 'react';
-import {editingSwitch, provider, sessions} from '@/editors';
+import {editingSwitch, pairing, provider, sessions} from '@/editors';
 import {EDITOR_ROLE} from '@/editors/identity-provider';
 import {RECHECK_INTERVAL_MS} from '@/editors/sessions';
 import {endMySessionNow, endSessionsOf, setAccountDisabled, setEditing, setEditorRole} from '../actions';
@@ -38,13 +38,15 @@ async function Access() {
           {provider.accounts().map((account) => {
             const editor = account.roles.includes(EDITOR_ROLE);
             const count = sessions.countOf(account.id);
+            const workbenches = pairing.countOf(account.id);
             return (
               <li key={account.id} className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
                 <div>
                   <div className="font-medium">{account.name}</div>
                   <div className="text-sm text-zinc-600 dark:text-zinc-400">
                     {editor ? 'Holds the Editor role.' : 'Does not hold the Editor role.'}{' '}
-                    {account.disabled ? 'Disabled.' : 'Active.'} {count} session{count === 1 ? '' : 's'}.
+                    {account.disabled ? 'Disabled.' : 'Active.'} {count} session{count === 1 ? '' : 's'},{' '}
+                    {workbenches} Storybook sign-in{workbenches === 1 ? '' : 's'}.
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -55,7 +57,9 @@ async function Access() {
                     <button type="submit" className={button}>{account.disabled ? 'Enable the account' : 'Disable the account'}</button>
                   </form>
                   <form action={endSessionsOf.bind(null, account.id)}>
-                    <button type="submit" className={button} disabled={count === 0}>End all sessions now</button>
+                    <button type="submit" className={button} disabled={count + workbenches === 0}>
+                      End all sessions now
+                    </button>
                   </form>
                 </div>
               </li>

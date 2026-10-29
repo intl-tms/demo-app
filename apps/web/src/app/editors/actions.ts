@@ -2,9 +2,10 @@
 
 import {refresh} from 'next/cache';
 import {cookies} from 'next/headers';
+import {redirect} from 'next/navigation';
 import {EDITOR_ROLE} from '@/editors/identity-provider';
 import {EDITOR_SESSION_COOKIE} from '@/editors/sessions';
-import {editingSwitch, provider, sessions} from '@/editors';
+import {editingSwitch, endAllOf, pairing, provider, sessions} from '@/editors';
 
 const secure = (process.env.SITE_URL ?? 'http://localhost:3000').startsWith('https:');
 
@@ -12,8 +13,16 @@ async function currentSessionId() {
   return (await cookies()).get(EDITOR_SESSION_COOKIE)?.value;
 }
 
+/**
+ * Where to go after signing in: Storybook's sign-in pop-up, when it sent the
+ * Editor here. Only a path on this website, never another site.
+ */
+function safeReturn(returnTo: string | undefined) {
+  return returnTo !== undefined && returnTo.startsWith('/') && !returnTo.startsWith('//') && !returnTo.includes('\\') ? returnTo : undefined;
+}
+
 /** Signs in as a demo account. A real provider's sign-in replaces only this choice of account. */
-export async function signInAs(accountId: string) {
+export async function signInAs(accountId: string, returnTo?: string) {
   const signedIn = provider.signIn(accountId);
   if (!signedIn) return;
   const session = sessions.start(signedIn);
@@ -28,11 +37,17 @@ export async function signInAs(accountId: string) {
     path: '/',
     expires: session.expires
   });
+  const back = safeReturn(returnTo);
+  if (back !== undefined) redirect(back);
 }
 
+/** Signs out, here and in every Storybook this Editor signed in to. */
 export async function signOut() {
   const jar = await cookies();
-  sessions.end(jar.get(EDITOR_SESSION_COOKIE)?.value);
+  const sessionId = jar.get(EDITOR_SESSION_COOKIE)?.value;
+  const user = await sessions.user(sessionId);
+  sessions.end(sessionId);
+  if (user !== undefined) await pairing.endAllOf(user.id);
   jar.delete(EDITOR_SESSION_COOKIE);
 }
 
@@ -58,7 +73,7 @@ export async function setAccountDisabled(accountId: string, disabled: boolean) {
 // The emergency stop.
 
 export async function endSessionsOf(accountId: string) {
-  sessions.endAllOf(accountId);
+  await endAllOf(accountId);
   refresh();
 }
 

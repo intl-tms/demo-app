@@ -102,6 +102,18 @@ export function createEditorSessions(options: {
       return {...session.user, roles: [...session.user.roles]};
     },
 
+    /**
+     * What Storybook's sign-in needs from a session: who, the grant to check
+     * them again with, and when they signed in, so an editing token ends when
+     * the session would. Nothing when there is no session.
+     */
+    async forPairing(sessionId: string | undefined) {
+      const user = await this.user(sessionId);
+      const session = sessionId === undefined ? undefined : store.get(sessionId);
+      if (user === undefined || session === undefined) return undefined;
+      return {user, grant: session.grant, signedInAt: session.signedInAt, checkedAt: session.checkedAt};
+    },
+
     /** Ends one session: signing out. */
     end(sessionId: string | undefined) {
       if (sessionId !== undefined) store.delete(sessionId);

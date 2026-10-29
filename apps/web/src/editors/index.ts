@@ -4,23 +4,32 @@
 
 import {createEditorCheck} from './check';
 import {createIdentityProvider, type StandInProvider} from './identity-provider';
+import {createEditorPairing, type EditorPairing} from './pairing';
 import {createEditorSessions, type EditorSessions} from './sessions';
 import {editingEnabled} from '@/tms/config';
 
-type Shared = {provider: StandInProvider; sessions: EditorSessions; editing: {on: boolean}};
+type Shared = {provider: StandInProvider; sessions: EditorSessions; pairing: EditorPairing; editing: {on: boolean}};
 
 const global = globalThis as {tmsEditors?: Shared};
 
 function shared(): Shared {
   if (!global.tmsEditors) {
     const provider = createIdentityProvider();
-    global.tmsEditors = {provider, sessions: createEditorSessions({provider}), editing: {on: true}};
+    const sessions = createEditorSessions({provider});
+    global.tmsEditors = {provider, sessions, pairing: createEditorPairing({provider, sessions}), editing: {on: true}};
   }
   return global.tmsEditors;
 }
 
 export const provider = shared().provider;
 export const sessions = shared().sessions;
+export const pairing = shared().pairing;
+
+/** Ends every session and every Storybook sign-in of one account: the emergency stop for one Editor. */
+export async function endAllOf(accountId: string) {
+  sessions.endAllOf(accountId);
+  await pairing.endAllOf(accountId);
+}
 
 /**
  * The editing switch: a stored setting that can be changed without a deploy,
@@ -35,4 +44,4 @@ export const editingSwitch = {
   }
 };
 
-export const authorize = createEditorCheck({sessions, editingOn: editingSwitch.isOn});
+export const authorize = createEditorCheck({sessions, pairing, editingOn: editingSwitch.isOn});

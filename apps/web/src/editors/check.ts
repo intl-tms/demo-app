@@ -3,19 +3,22 @@
 
 import {sessionCheck} from '@intl-tms/core';
 import {EDITOR_ROLE} from './identity-provider';
-import {cookieFrom, EDITOR_SESSION_COOKIE, type EditorSessions} from './sessions';
+import {cookieFrom, EDITOR_SESSION_COOKIE, type EditorSessions, type EditorUser} from './sessions';
 
 /** Where the Extension sends an Editor who is not signed in. */
 export const SIGN_IN_PATH = '/editors/sign-in';
 
 export function createEditorCheck(options: {
   sessions: EditorSessions;
+  /** Storybook's sign-in: an editing token's user, judged by the same rules as a session's. */
+  pairing?: {user: (request: Request) => Promise<EditorUser | undefined>};
   /** The editing switch, read on every request. Off, every request is refused and no page is marked. */
   editingOn: () => boolean;
 }) {
   return sessionCheck({
-    // Only the Editors' session is read, never a customer login's.
-    user: (request) => options.sessions.user(cookieFrom(request.headers.get('cookie'), EDITOR_SESSION_COOKIE)),
+    // Storybook's editing token first, then the Editors' session; never a customer login's.
+    user: async (request) =>
+      (await options.pairing?.user(request)) ?? options.sessions.user(cookieFrom(request.headers.get('cookie'), EDITOR_SESSION_COOKIE)),
     may: (user) => options.editingOn() && user.roles.includes(EDITOR_ROLE),
     signIn: SIGN_IN_PATH,
     help: {
