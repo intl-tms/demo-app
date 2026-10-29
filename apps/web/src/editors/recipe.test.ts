@@ -30,7 +30,7 @@ function demo() {
     saveValue: (key, write, context) => (saved.push(context ?? {}), memory.saveValue(key, write))
   };
   const handler = createHandler({config, adapter, authorize});
-  const signIn = (accountId: string) => `${EDITOR_SESSION_COOKIE}=${sessions.signIn(accountId)!.id}`;
+  const signIn = (accountId: string) => `${EDITOR_SESSION_COOKIE}=${sessions.start(provider.signIn(accountId)!).id}`;
   const read = (cookie?: string) =>
     handler(new Request(`${SITE}/api/tms/keys/home.title`, {headers: cookie ? {cookie} : {}}));
   const save = (cookie: string) =>
@@ -81,9 +81,9 @@ describe('the login for Editors', () => {
   });
 
   it('a disabled account cannot sign in', () => {
-    const {provider, sessions} = demo();
+    const {provider} = demo();
     provider.setDisabled('ada', true);
-    expect(sessions.signIn('ada')).toBeUndefined();
+    expect(provider.signIn('ada')).toBeUndefined();
   });
 });
 

@@ -8,7 +8,6 @@
 // the identity provider again at a fixed interval. A real setup keeps the store
 // in its database; the demo keeps it in memory.
 
-import type {IdentityProvider} from './identity-provider';
 
 /** The Editors' session cookie. Never the name of a customer login's cookie. */
 export const EDITOR_SESSION_COOKIE = 'tms-editor-session';
@@ -26,8 +25,18 @@ export const RECHECK_INTERVAL_MS = 60 * 1000;
 
 export type EditorUser = {id: string; name: string; roles: string[]};
 
+/** What signing in with the identity provider gives: who, and a grant to re-check them with later. */
+export type ProviderSignIn = {user: EditorUser; grant: string};
+
+/** What re-checking gives: the account is gone or disabled, or its current roles and the grant to use next time. */
+export type Recheck = {active: false} | {active: true; roles: string[]; grant: string};
+
+/** The one thing the sessions need from the identity provider. */
+export type IdentityProvider = {recheck: (grant: string) => Recheck | Promise<Recheck>};
+
 type SessionRecord = {
   user: EditorUser;
+  grant: string;
   signedInAt: number;
   checkedAt: number;
 };
@@ -53,16 +62,13 @@ export function createEditorSessions(options: {
 
   return {
     /**
-     * Signs an account in with the identity provider and starts a session.
-     * The answer is the session's identifier, for the cookie, or nothing when
-     * the provider refused.
+     * Starts a session for someone the identity provider just signed in. The
+     * answer is the session's identifier, for the cookie, and when it ends.
      */
-    signIn(accountId: string) {
-      const user = provider.signIn(accountId);
-      if (!user) return undefined;
+    start(signedIn: ProviderSignIn) {
       const id = newSessionId();
       const at = now();
-      store.set(id, {user, signedInAt: at, checkedAt: at});
+      store.set(id, {user: signedIn.user, grant: signedIn.grant, signedInAt: at, checkedAt: at});
       return {id, expires: new Date(at + lifetime)};
     },
 
@@ -72,7 +78,7 @@ export function createEditorSessions(options: {
      * checked with the provider again: a disabled account ends the session,
      * and the roles are replaced by the provider's current ones.
      */
-    user(sessionId: string | undefined): EditorUser | undefined {
+    async user(sessionId: string | undefined): Promise<EditorUser | undefined> {
       if (sessionId === undefined) return undefined;
       const session = store.get(sessionId);
       if (!session) return undefined;
@@ -82,12 +88,15 @@ export function createEditorSessions(options: {
         return undefined;
       }
       if (at - session.checkedAt >= recheckEvery) {
-        const current = provider.recheck(session.user.id);
+        const current = await provider.recheck(session.grant);
+        // Ended while the provider was asked: an emergency stop wins.
+        if (!store.has(sessionId)) return undefined;
         if (!current.active) {
           store.delete(sessionId);
           return undefined;
         }
         session.user = {...session.user, roles: current.roles};
+        session.grant = current.grant;
         session.checkedAt = at;
       }
       return {...session.user, roles: [...session.user.roles]};

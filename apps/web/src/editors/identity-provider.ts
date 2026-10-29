@@ -5,12 +5,16 @@
 // It offers the two things a real provider gives the website: signing in,
 // which says who the account is and which roles it holds, and re-checking,
 // which says whether the account is still active and what its roles are now.
+// Signing in also hands over a grant, kept with the session and handed back
+// to re-check: a real provider's refresh token, here just the account.
 // The access page plays the IT department and changes accounts here; a
 // signed-in Editor only sees a change at the next re-check, as with a real
 // provider.
 //
 // State lives in memory: restarting the demo returns every account to how it
 // starts.
+
+import type {ProviderSignIn, Recheck} from './sessions';
 
 /** The role IT gives to people who may edit translations. */
 export const EDITOR_ROLE = 'Editor';
@@ -48,7 +52,7 @@ const STARTING_ACCOUNTS: readonly Account[] = [
   }
 ];
 
-export type IdentityProvider = ReturnType<typeof createIdentityProvider>;
+export type StandInProvider = ReturnType<typeof createIdentityProvider>;
 
 export function createIdentityProvider(starting: readonly Account[] = STARTING_ACCOUNTS) {
   const accounts = new Map(starting.map((account) => [account.id, structuredClone(account)]));
@@ -61,17 +65,17 @@ export function createIdentityProvider(starting: readonly Account[] = STARTING_A
 
   return {
     /** Signs an account in: who it is and its roles, or nothing when it is disabled or unknown. */
-    signIn(id: string) {
+    signIn(id: string): ProviderSignIn | undefined {
       const account = accounts.get(id);
       if (!account || account.disabled) return undefined;
-      return {id: account.id, name: account.name, roles: [...account.roles]};
+      return {user: {id: account.id, name: account.name, roles: [...account.roles]}, grant: account.id};
     },
 
     /** Whether the account is still active, and its roles now. */
-    recheck(id: string) {
-      const account = accounts.get(id);
-      if (!account || account.disabled) return {active: false, roles: []};
-      return {active: true, roles: [...account.roles]};
+    recheck(grant: string): Recheck {
+      const account = accounts.get(grant);
+      if (!account || account.disabled) return {active: false};
+      return {active: true, roles: [...account.roles], grant};
     },
 
     // What the IT department does, on the access page.

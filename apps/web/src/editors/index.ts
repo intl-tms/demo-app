@@ -3,11 +3,11 @@
 // separately, and a development reload all share the same ones.
 
 import {createEditorCheck} from './check';
-import {createIdentityProvider, type IdentityProvider} from './identity-provider';
+import {createIdentityProvider, type StandInProvider} from './identity-provider';
 import {createEditorSessions, type EditorSessions} from './sessions';
 import {editingEnabled} from '@/tms/config';
 
-type Shared = {provider: IdentityProvider; sessions: EditorSessions; editing: {on: boolean}};
+type Shared = {provider: StandInProvider; sessions: EditorSessions; editing: {on: boolean}};
 
 const global = globalThis as {tmsEditors?: Shared};
 

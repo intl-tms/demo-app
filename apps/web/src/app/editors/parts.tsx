@@ -31,7 +31,7 @@ export function Nav() {
 
 /** Who is signed in to the login for Editors in this browser. */
 export async function CurrentEditor() {
-  const user = sessions.user((await cookies()).get(EDITOR_SESSION_COOKIE)?.value);
+  const user = await sessions.user((await cookies()).get(EDITOR_SESSION_COOKIE)?.value);
   if (!user) return <p className="text-sm">Not signed in.</p>;
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">

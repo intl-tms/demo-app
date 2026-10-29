@@ -14,8 +14,9 @@ async function currentSessionId() {
 
 /** Signs in as a demo account. A real provider's sign-in replaces only this choice of account. */
 export async function signInAs(accountId: string) {
-  const session = sessions.signIn(accountId);
-  if (!session) return;
+  const signedIn = provider.signIn(accountId);
+  if (!signedIn) return;
+  const session = sessions.start(signedIn);
   const jar = await cookies();
   sessions.end(jar.get(EDITOR_SESSION_COOKIE)?.value);
   jar.set(EDITOR_SESSION_COOKIE, session.id, {
