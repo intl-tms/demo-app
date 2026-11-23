@@ -12,6 +12,10 @@ export const config = resolveConfig({
   locales: routing.locales,
   basePath: `${siteUrl}/api/tms`,
   sourceLocale: routing.defaultLocale,
+  // The outline this website draws around an editable translation. A website
+  // would put its own brand here; these are the Core's own defaults, written
+  // out because the published Core still ships the older green and blue.
+  colors: {highlight: '#8b5cf6', active: '#5b21b6'},
   // What this website asks of a translation beyond the string itself. None of
   // it is built into the editing panel: these names, labels and options are
   // this demo's, and another website would declare different ones or none.
