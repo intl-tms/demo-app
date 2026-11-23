@@ -7,6 +7,7 @@ import {
 } from '@intl-tms/core';
 import {bundledValues} from './bundled';
 import type {config} from './config';
+import limits from '../../messages/limits.json';
 
 type Config = typeof config;
 type Locale = Config['locales'][number];
@@ -26,15 +27,17 @@ type TranslationDoc = {
 const FIRST_WORKFLOW = 'needs-copy';
 
 /**
- * The Read-only `charLimit` Field: a length the design gives a string, which
- * the website knows and an Editor cannot change. A real site would read this
- * from wherever its design constraints live; here it is a short list, and a key
- * that is not in it has no limit to show.
+ * The Read-only `charLimit` Field: how long the design lets a string be. The
+ * website knows it and an Editor cannot change it, which is the whole point of
+ * a Read-only Field — it is supplied on every read and never written.
+ *
+ * Kept beside the messages, keyed exactly as they are, so whoever adds a key
+ * adds its limit in the same place. A key with no entry simply has no limit to
+ * show, and the panel draws a dash.
  */
-const CHAR_LIMITS: Partial<Record<string, string>> = {
-  'shared.47FYwb': '12 — a button',
-  'shared.kAEQyV': '8 — a button',
-  jOuyTp: '20 — a menu item'
+const charLimitOf = (key: string): string | undefined => {
+  const limit = (limits as Partial<Record<string, number>>)[key];
+  return limit === undefined ? undefined : `${limit} characters`;
 };
 // One document per (key, url).
 type UsageDoc = {key: string; url: string; title?: string; count: number; lastSeen: Date};
@@ -75,7 +78,7 @@ export const adapter: StorageAdapter<Config> = {
       .toArray();
     const stored = new Map(docs.map(({locale, ...row}) => [locale, row]));
     const bundled = bundledValues(key);
-    const charLimit = CHAR_LIMITS[key];
+    const charLimit = charLimitOf(key);
     const locales = new Set<Locale>([...(Object.keys(bundled) as Locale[]), ...stored.keys()]);
     // Merged per column rather than per row: a row stored before a Field existed
     // still answers with that Field, and a bundled message still backs a row
