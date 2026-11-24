@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useExtracted } from "next-intl";
 
 import { LocaleSwitcher } from "@/components/locale-switcher";
@@ -19,7 +20,16 @@ export default function Home() {
             height={20}
             priority
           />
-          <LocaleSwitcher />
+          <div className="flex items-center gap-4">
+            {/* Outside the locale routing, so a plain link rather than the locale-aware one. */}
+            <Link
+              href="/editors/sign-in"
+              className="text-sm font-medium text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              Editor sign-in
+            </Link>
+            <LocaleSwitcher />
+          </div>
         </div>
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">

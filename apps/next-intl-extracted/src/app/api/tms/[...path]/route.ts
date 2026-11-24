@@ -1,7 +1,8 @@
 import {createHandler} from '@intl-tms/core';
+import {authorize, pairing} from '@/editors';
 import {adapter} from '@/tms/adapter';
 import {bundledValues} from '@/tms/bundled';
-import {config, editingEnabled} from '@/tms/config';
+import {config} from '@/tms/config';
 import {routing} from '@/i18n/routing';
 
 const handler = createHandler({
@@ -14,10 +15,14 @@ const handler = createHandler({
     const sourceMessage = bundledValues(key)[routing.defaultLocale];
     return sourceMessage === undefined ? undefined : {sourceMessage};
   },
-  // Demo only: anyone may read and write while editing is enabled. Replace
-  // with a real check (a session, a role) before this serves real content.
-  authorize: () => editingEnabled,
-  // Storybook runs on its own origin and edits through these endpoints.
+  // Someone signed in to the login for Editors who holds the Editor role, while
+  // editing is switched on. Nobody signed in gets 401 and the sign-in page;
+  // someone without the role gets 403.
+  authorize,
+  // Storybook signs in through a pop-up on the Editors' login and edits with
+  // an editing token. It runs on its own origin, which is listed here: the
+  // pop-up hands a sign-in to no other origin.
+  pairing,
   cors: {origins: [process.env.STORYBOOK_URL ?? 'http://localhost:6006']}
 });
 
