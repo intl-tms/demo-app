@@ -1,10 +1,19 @@
 import {createHandler} from '@intl-tms/core';
 import {adapter} from '@/tms/adapter';
+import {bundledValues} from '@/tms/bundled';
 import {config, editingEnabled} from '@/tms/config';
+import {routing} from '@/i18n/routing';
 
 const handler = createHandler({
   config,
   adapter,
+  // The keys here are hashes, so without this the panel heads every translation
+  // with "9s3ioP". The message in the code is the authority on a key's wording,
+  // which is exactly what `sourceMessage` is for.
+  metadata: (key) => {
+    const sourceMessage = bundledValues(key)[routing.defaultLocale];
+    return sourceMessage === undefined ? undefined : {sourceMessage};
+  },
   // Demo only: anyone may read and write while editing is enabled. Replace
   // with a real check (a session, a role) before this serves real content.
   authorize: () => editingEnabled,

@@ -7,12 +7,38 @@ import {
 } from '@intl-tms/core';
 import {bundledValues} from './bundled';
 import type {config} from './config';
+import limits from '../../messages/limits.json';
 
 type Config = typeof config;
 type Locale = Config['locales'][number];
 
-// One document per (key, locale): the row's columns sit next to them.
-type TranslationDoc = {key: string; locale: Locale; value: string};
+// One document per (key, locale): the row's columns sit next to them. The
+// columns past `value` are this website's Schema (see `config.ts`), and each is
+// optional because a row may predate the Field.
+type TranslationDoc = {
+  key: string;
+  locale: Locale;
+  value: string;
+  workflow?: 'needs-copy' | 'legal' | 'signed' | '';
+  glossary?: string;
+};
+
+/** Where the Workflow of existing content starts, so a required Field is never empty on arrival. */
+const FIRST_WORKFLOW = 'needs-copy';
+
+/**
+ * The Read-only `charLimit` Field: how long the design lets a string be. The
+ * website knows it and an Editor cannot change it, which is the whole point of
+ * a Read-only Field — it is supplied on every read and never written.
+ *
+ * Kept beside the messages, keyed exactly as they are, so whoever adds a key
+ * adds its limit in the same place. A key with no entry simply has no limit to
+ * show, and the panel draws a dash.
+ */
+const charLimitOf = (key: string): string | undefined => {
+  const limit = (limits as Partial<Record<string, number>>)[key];
+  return limit === undefined ? undefined : `${limit} characters`;
+};
 // One document per (key, url).
 type UsageDoc = {key: string; url: string; title?: string; count: number; lastSeen: Date};
 
@@ -50,10 +76,31 @@ export const adapter: StorageAdapter<Config> = {
     const docs = await (await translations())
       .find({key}, {projection: {_id: 0, key: 0}})
       .toArray();
-    // A locale with no stored row answers with its bundled message, so the
-    // panel edits the real pattern instead of the formatted text on the page.
-    const bundled = Object.entries(bundledValues(key)).map(([locale, value]) => [locale, {value}]);
-    return Object.fromEntries([...bundled, ...docs.map(({locale, ...row}) => [locale, row])]);
+    const stored = new Map(docs.map(({locale, ...row}) => [locale, row]));
+    const bundled = bundledValues(key);
+    const charLimit = charLimitOf(key);
+    const locales = new Set<Locale>([...(Object.keys(bundled) as Locale[]), ...stored.keys()]);
+    // Merged per column rather than per row: a row stored before a Field existed
+    // still answers with that Field, and a bundled message still backs a row
+    // that has none.
+    return Object.fromEntries(
+      [...locales].map((locale) => {
+        const row = stored.get(locale);
+        return [
+          locale,
+          {
+            // A locale with no stored row answers with its bundled message, so
+            // the panel edits the real pattern instead of the formatted text on
+            // the page. A stored empty string is a cleared value and stays empty.
+            value: row?.value ?? bundled[locale] ?? '',
+            workflow: row?.workflow ?? FIRST_WORKFLOW,
+            ...(row?.glossary === undefined ? {} : {glossary: row.glossary}),
+            // Never written: supplied here on every read.
+            ...(charLimit === undefined ? {} : {charLimit})
+          }
+        ];
+      })
+    );
   },
 
   async saveValue(key, write) {
